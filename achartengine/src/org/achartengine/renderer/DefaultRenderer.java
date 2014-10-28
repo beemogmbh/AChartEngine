@@ -51,10 +51,14 @@ public class DefaultRenderer implements Serializable {
   private boolean mApplyBackgroundColor;
   /** If the axes are visible. */
   private boolean mShowAxes = true;
-  /** The axes color. */
-  private int mAxesColor = TEXT_COLOR;
+  /** The Y axis color. */
+  private int mYAxisColor = TEXT_COLOR;
+  /** The X axis color. */
+  private int mXAxisColor = TEXT_COLOR;
   /** If the labels are visible. */
   private boolean mShowLabels = true;
+  /** If the tick marks are visible. */
+  private boolean mShowTickMarks = true;
   /** The labels color. */
   private int mLabelsColor = TEXT_COLOR;
   /** The labels text size. */
@@ -251,7 +255,11 @@ public class DefaultRenderer implements Serializable {
    * @return the axes color
    */
   public int getAxesColor() {
-    return mAxesColor;
+    if (mXAxisColor != TEXT_COLOR) {
+      return mXAxisColor;
+    } else {
+      return mYAxisColor;
+    }
   }
 
   /**
@@ -260,7 +268,44 @@ public class DefaultRenderer implements Serializable {
    * @param color the axes color
    */
   public void setAxesColor(int color) {
-    mAxesColor = color;
+    this.setXAxisColor(color);
+    this.setYAxisColor(color);
+  }
+
+  /**
+   * Returns the color of the Y axis
+   * 
+   * @return the Y axis color
+   */
+  public int getYAxisColor() {
+    return mYAxisColor;
+  }
+
+  /**
+   * Sets the Y axis color.
+   * 
+   * @param color the Y axis color
+   */
+  public void setYAxisColor(int color) {
+    mYAxisColor = color;
+  }
+
+  /**
+   * Returns the color of the X axis
+   * 
+   * @return the X axis color
+   */
+  public int getXAxisColor() {
+    return mXAxisColor;
+  }
+
+  /**
+   * Sets the X axis color.
+   * 
+   * @param color the X axis color
+   */
+  public void setXAxisColor(int color) {
+    mXAxisColor = color;
   }
 
   /**
@@ -336,6 +381,24 @@ public class DefaultRenderer implements Serializable {
   }
 
   /**
+   * Returns if the tick marks should be visible.
+   * 
+   * @return
+   */
+  public boolean isShowTickMarks() {
+    return mShowTickMarks;
+  }
+
+  /**
+   * Sets if the tick marks should be visible.
+   * 
+   * @param showTickMarks the visibility flag for the tick marks
+   */
+  public void setShowTickMarks(boolean mShowTickMarks) {
+    this.mShowTickMarks = mShowTickMarks;
+  }
+
+  /**
    * Returns if the X axis grid should be visible.
    * 
    * @return the visibility flag for the X axis grid
@@ -370,7 +433,6 @@ public class DefaultRenderer implements Serializable {
   public void setShowGridY(boolean showGrid) {
     mShowGridY = showGrid;
   }
-
 
   /**
    * Sets if the grid should be visible.
@@ -777,6 +839,9 @@ public class DefaultRenderer implements Serializable {
    * @param startAngle the start angle in degrees
    */
   public void setStartAngle(float startAngle) {
+    while (startAngle < 0) {
+      startAngle += 360;
+    }
     mStartAngle = startAngle;
   }
 

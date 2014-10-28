@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.achartengine.util.IndexXYMap;
 import org.achartengine.util.MathHelper;
@@ -43,9 +44,7 @@ public class XYSeries implements Serializable {
   /** The maximum value for the Y axis. */
   private double mMaxY = -MathHelper.NULL_VALUE;
   /** The scale number for this series. */
-  private final int mScaleNumber;
-  /** A padding value that will be added when adding values with the same X. */
-  private static final double PADDING = 0.000000000001;
+  private int mScaleNumber;
   /** Contains the annotations. */
   private List<String> mAnnotations = new ArrayList<String>();
   /** A map contain a (x,y) value for each String annotation. */
@@ -70,6 +69,10 @@ public class XYSeries implements Serializable {
     mTitle = title;
     mScaleNumber = scaleNumber;
     initRange();
+  }
+  
+  public void setScaleNumber(int scaleNumber) {
+	  mScaleNumber = scaleNumber;
   }
 
   public int getScaleNumber() {
@@ -133,7 +136,7 @@ public class XYSeries implements Serializable {
     while (mXY.get(x) != null) {
       // add a very small value to x such as data points sharing the same x will
       // still be added
-      x += getPadding();
+      x += getPadding(x);
     }
     mXY.put(x, y);
     updateRange(x, y);
@@ -150,14 +153,14 @@ public class XYSeries implements Serializable {
     while (mXY.get(x) != null) {
       // add a very small value to x such as data points sharing the same x will
       // still be added
-      x += getPadding();
+      x += getPadding(x);
     }
     mXY.put(index, x, y);
     updateRange(x, y);
   }
-  
-  protected double getPadding() {
-    return PADDING;
+
+  protected double getPadding(double x) {
+    return Math.ulp(x);
   }
 
   /**
@@ -175,12 +178,35 @@ public class XYSeries implements Serializable {
   }
 
   /**
-   * Removes all the existing values from the series.
+   * Removes all the existing values and annotations from the series.
    */
   public synchronized void clear() {
+    clearAnnotations();
+    clearSeriesValues();
+  }
+
+  /**
+   * Removes all the existing values from the series but annotations.
+   */
+  public synchronized void clearSeriesValues() {
     mXY.clear();
-    mStringXY.clear();
     initRange();
+  }
+
+  /**
+   * Removes all the existing annotations from the series.
+   */
+  public synchronized void clearAnnotations() {
+    mStringXY.clear();
+  }
+
+  /**
+   * Returns the current values that are used for drawing the series.
+   * 
+   * @return the XY map
+   */
+  public synchronized IndexXYMap<Double, Double> getXYMap() {
+    return mXY;
   }
 
   /**
@@ -212,6 +238,9 @@ public class XYSeries implements Serializable {
    */
   public void addAnnotation(String annotation, double x, double y) {
     mAnnotations.add(annotation);
+    while (mStringXY.get(x) != null) {
+      x += getPadding(x);
+    }
     mStringXY.put(x, y);
   }
 
@@ -277,8 +306,7 @@ public class XYSeries implements Serializable {
       boolean beforeAfterPoints) {
     if (beforeAfterPoints) {
       // we need to add one point before the start and one point after the end
-      // (if
-      // there are any)
+      // (if there are any)
       // to ensure that line doesn't end before the end of the screen
 
       // this would be simply: start = mXY.lowerKey(start) but NavigableMap is
@@ -302,7 +330,11 @@ public class XYSeries implements Serializable {
         }
       }
     }
-    return mXY.subMap(start, stop);
+    if (start <= stop) {
+      return mXY.subMap(start, stop);
+    } else {
+      return new TreeMap<Double, Double>();
+    }
   }
 
   public int getIndexForKey(double key) {

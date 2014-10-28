@@ -12,6 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * 
+ * Modified Version for XRoundedLabel by Chris Verspohl
  */
 package org.achartengine.chart;
 
@@ -26,7 +28,9 @@ import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 /**
  * The time chart rendering class.
@@ -36,6 +40,9 @@ public class TimeChart extends LineChart {
   public static final String TYPE = "Time";
   /** The number of milliseconds in a day. */
   public static final long DAY = 24 * 60 * 60 * 1000;
+  public static final long SECOND = 1000;
+  public static final long MINUTE = 60 * 1000;
+  public static final long HOUR = 60 * 60 * 1000;
   /** The date format pattern to be used in formatting the X axis labels. */
   private String mDateFormat;
   /** The starting point for labels. */
@@ -95,19 +102,24 @@ public class TimeChart extends LineChart {
     if (length > 0) {
       boolean showLabels = mRenderer.isShowLabels();
       boolean showGridY = mRenderer.isShowGridY();
+      boolean showTickMarks = mRenderer.isShowTickMarks();
       DateFormat format = getDateFormat(xLabels.get(0), xLabels.get(length - 1));
       for (int i = 0; i < length; i++) {
         long label = Math.round(xLabels.get(i));
         float xLabel = (float) (left + xPixelsPerUnit * (label - minX));
         if (showLabels) {
           paint.setColor(mRenderer.getXLabelsColor());
-          canvas
-              .drawLine(xLabel, bottom, xLabel, bottom + mRenderer.getLabelsTextSize() / 3, paint);
+          if (showTickMarks) {
+            canvas.drawLine(xLabel, bottom, xLabel, bottom + mRenderer.getLabelsTextSize() / 3,
+                paint);
+          }
           drawText(canvas, format.format(new Date(label)), xLabel,
-              bottom + mRenderer.getLabelsTextSize() * 4 / 3 + mRenderer.getXLabelsPadding(), paint, mRenderer.getXLabelsAngle());
+              bottom + mRenderer.getLabelsTextSize() * 4 / 3 + mRenderer.getXLabelsPadding(),
+              paint, mRenderer.getXLabelsAngle());
         }
         if (showGridY) {
-          paint.setColor(mRenderer.getGridColor(0));
+//          paint.setColor(mRenderer.getGridColor(0));
+        	paint.setColor(Color.argb(128,100,100,100));
           canvas.drawLine(xLabel, bottom, xLabel, top, paint);
         }
       }
@@ -190,6 +202,7 @@ public class TimeChart extends LineChart {
         return super.getXLabels(min, max, count);
       }
     }
+
     if (mStartPoint == null) {
       mStartPoint = min - (min % DAY) + DAY + new Date(Math.round(min)).getTimezoneOffset() * 60
           * 1000;
@@ -198,14 +211,13 @@ public class TimeChart extends LineChart {
       count = 25;
     }
 
-    
     final double cycleMath = (max - min) / count;
     if (cycleMath <= 0) {
       return result;
     }
-    double cycle = DAY;
+    double cycle = SECOND;
 
-    if (cycleMath <= DAY) {
+    if (cycleMath <= SECOND) {
       while (cycleMath < cycle / 2) {
         cycle = cycle / 2;
       }

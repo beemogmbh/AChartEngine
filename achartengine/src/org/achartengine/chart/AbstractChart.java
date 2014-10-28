@@ -217,6 +217,19 @@ public abstract class AbstractChart implements Serializable {
     }
     return text;
   }
+  
+  protected String getLabelWithUnit(NumberFormat format, double label, String unit) {
+	  String text = "";
+	  if (format !=null) {
+		  text = format.format(label) + " " + unit;
+	  } else if(label == Math.round(label)) {
+		  text = Math.round(label) + " " + unit;
+	  } else {
+		  text = label + " " + unit;
+	  }
+	  
+	  return text;
+  }
 
   private static float[] calculateDrawPoints(float p1x, float p1y, float p2x, float p2y,
       int screenHeight, int screenWidth) {
