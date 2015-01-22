@@ -12,8 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
- * Modified Version without Pinch-Zoom by Chris Verspohl
  */
 package org.achartengine;
 
@@ -40,10 +38,15 @@ public class TouchHandler implements ITouchHandler {
   /** The old y coordinate. */
   private float oldY;
   /** The old x2 coordinate. */
+  private float oldX2;
+  /** The old y2 coordinate. */
+  private float oldY2;
   /** The zoom buttons rectangle. */
   private RectF zoomR = new RectF();
   /** The pan tool. */
   private Pan mPan;
+  /** The zoom for the pinch gesture. */
+  private Zoom mPinchZoom;
   /** The graphical view. */
   private GraphicalView graphicalView;
 
@@ -64,6 +67,9 @@ public class TouchHandler implements ITouchHandler {
     if (mRenderer.isPanEnabled()) {
       mPan = new Pan(chart);
     }
+    if (mRenderer.isZoomEnabled()) {
+      mPinchZoom = new Zoom(chart, true, 1);
+    }
   }
 
   /**
@@ -77,8 +83,42 @@ public class TouchHandler implements ITouchHandler {
       if (oldX >= 0 || oldY >= 0) {
         float newX = event.getX(0);
         float newY = event.getY(0);
-        if (mRenderer.isPanEnabled()) {
+        if (event.getPointerCount() > 1 && (oldX2 >= 0 || oldY2 >= 0) && mRenderer.isZoomEnabled()) {
+          float newX2 = event.getX(1);
+          float newY2 = event.getY(1);
+          float newDeltaX = Math.abs(newX - newX2);
+          float newDeltaY = Math.abs(newY - newY2);
+          float oldDeltaX = Math.abs(oldX - oldX2);
+          float oldDeltaY = Math.abs(oldY - oldY2);
+          float zoomRate = 1;
+
+          float tan1 = Math.abs(newY - oldY) / Math.abs(newX - oldX);
+          float tan2 = Math.abs(newY2 - oldY2) / Math.abs(newX2 - oldX2);
+          if (tan1 <= 0.25 && tan2 <= 0.25) {
+            // horizontal pinch zoom, |deltaY| / |deltaX| is [0 ~ 0.25], 0.25 is
+            // the approximate value of tan(PI / 12)
+            zoomRate = newDeltaX / oldDeltaX;
+            applyZoom(zoomRate, Zoom.ZOOM_AXIS_X);
+          } else if (tan1 >= 3.73 && tan2 >= 3.73) {
+            // pinch zoom vertically, |deltaY| / |deltaX| is [3.73 ~ infinity],
+            // 3.732 is the approximate value of tan(PI / 2 - PI / 12)
+            zoomRate = newDeltaY / oldDeltaY;
+            applyZoom(zoomRate, Zoom.ZOOM_AXIS_Y);
+          } else {
+            // pinch zoom diagonally
+            if (Math.abs(newX - oldX) >= Math.abs(newY - oldY)) {
+              zoomRate = newDeltaX / oldDeltaX;
+            } else {
+              zoomRate = newDeltaY / oldDeltaY;
+            }
+            applyZoom(zoomRate, Zoom.ZOOM_AXIS_XY);
+          }
+          oldX2 = newX2;
+          oldY2 = newY2;
+        } else if (mRenderer.isPanEnabled()) {
           mPan.apply(oldX, oldY, newX, newY);
+          oldX2 = 0;
+          oldY2 = 0;
         }
         oldX = newX;
         oldY = newY;
@@ -101,12 +141,45 @@ public class TouchHandler implements ITouchHandler {
     } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) {
       oldX = 0;
       oldY = 0;
+      oldX2 = 0;
+      oldY2 = 0;
       if (action == MotionEvent.ACTION_POINTER_UP) {
         oldX = -1;
         oldY = -1;
       }
     }
     return !mRenderer.isClickEnabled();
+  }
+
+  private void applyZoom(float zoomRate, int axis) {
+    zoomRate = Math.max(zoomRate, 0.9f);
+    zoomRate = Math.min(zoomRate, 1.1f);
+    if (zoomRate > 0.9 && zoomRate < 1.1) {
+      mPinchZoom.setZoomRate(zoomRate);
+      mPinchZoom.apply(axis);
+    }
+  }
+
+  /**
+   * Adds a new zoom listener.
+   * 
+   * @param listener zoom listener
+   */
+  public void addZoomListener(ZoomListener listener) {
+    if (mPinchZoom != null) {
+      mPinchZoom.addZoomListener(listener);
+    }
+  }
+
+  /**
+   * Removes a zoom listener.
+   * 
+   * @param listener zoom listener
+   */
+  public void removeZoomListener(ZoomListener listener) {
+    if (mPinchZoom != null) {
+      mPinchZoom.removeZoomListener(listener);
+    }
   }
 
   /**
@@ -130,16 +203,4 @@ public class TouchHandler implements ITouchHandler {
       mPan.removePanListener(listener);
     }
   }
-
-@Override
-public void addZoomListener(ZoomListener listener) {
-	// Do nothing here
-	
-}
-
-@Override
-public void removeZoomListener(ZoomListener listener) {
-	// Do nothing here
-	
-}
 }
