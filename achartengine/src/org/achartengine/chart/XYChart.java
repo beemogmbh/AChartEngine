@@ -114,7 +114,17 @@ public abstract class XYChart extends AbstractChart {
     int sLength = mDataset.getSeriesCount();
     String[] titles = new String[sLength];
     for (int i = 0; i < sLength; i++) {
-      titles[i] = mDataset.getSeriesAt(i).getTitle();
+      final XYSeries series = mDataset.getSeriesAt(i);
+      if (series != null) {
+        final String title = series.getTitle();
+        if (title != null) {
+          titles[i] = title;
+        } else {
+          titles[i] = "";
+        }
+      } else {
+        titles[i] = "";
+      }
     }
     if (mRenderer.isFitLegend() && mRenderer.isShowLegend()) {
       legendSize = drawLegend(canvas, mRenderer, titles, left, right, y, width, height, legendSize,
