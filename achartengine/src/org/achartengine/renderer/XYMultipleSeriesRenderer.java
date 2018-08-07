@@ -114,6 +114,8 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
   private double mZoomInLimitX = 0;
   /** The zoom in limit permitted in the axis Y */
   private double mZoomInLimitY = 0;
+  /** The initial padding of y titles */
+  private float mYTitlesPadding = 0;
 
   /**
    * An enum for the XY chart orientation of the X axis.
@@ -1223,6 +1225,24 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
    */
   public void setYLabelsPadding(float padding, int scale) {
     mYLabelsPadding[scale] = padding;
+  }
+
+  /**
+   * Sets the Y titles padding
+   * 
+   * @param padding the amount of padding the start/end border and the title
+   */
+  public void setYTitlesPadding(float padding) {
+    mYTitlesPadding = padding;
+  }
+
+  /**
+   * Return the Y titles padding
+   * 
+   * @return Y titles start/end padding
+   */
+  public float getYTitlesPadding() {
+    return mYTitlesPadding;
   }
 
   /**

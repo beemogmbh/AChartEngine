@@ -439,9 +439,9 @@ public abstract class XYChart extends AbstractChart {
           for (int i = 0; i < maxScaleNumber; i++) {
             Align axisAlign = mRenderer.getYAxisAlign(i);
             if (axisAlign == Align.LEFT) {
-              drawText(canvas, mRenderer.getYTitle(i), x + size, y + height / 2, paint, -90);
+              drawText(canvas, mRenderer.getYTitle(i), x + size + mRenderer.getYTitlesPadding(), y + height / 2, paint, -90);
             } else {
-              drawText(canvas, mRenderer.getYTitle(i), x + width, y + height / 2, paint, -90);
+              drawText(canvas, mRenderer.getYTitle(i), x + width - mRenderer.getYTitlesPadding(), y + height / 2, paint, -90);
             }
           }
           paint.setTextSize(mRenderer.getChartTitleTextSize());
