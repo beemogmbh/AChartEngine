@@ -99,6 +99,10 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
   private int mXLabelsColor = TEXT_COLOR;
   /** The Y axis labels color. */
   private int[] mYLabelsColor = new int[] { TEXT_COLOR };
+  /** The bottom label color. */
+  private int mBottomLabelColor = TEXT_COLOR;
+  /** The scale label color. */
+  private int[] mScaleLabelColor = new int[] { TEXT_COLOR, TEXT_COLOR };
   /**
    * If X axis value selection algorithm to be used. Only used by the time
    * charts.
@@ -1122,6 +1126,54 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
    */
   public void setYLabelsColor(int scale, int color) {
     mYLabelsColor[scale] = color;
+  }
+
+  /**
+   * Returns the bottom label color
+   * 
+   * @return the bottom label color
+   */
+  public int getBottomLabelColor() {
+    return mBottomLabelColor;
+  }
+
+  /**
+   * Returns the scale label color
+   * 
+   * @return the scale label color
+   */
+  public int getScaleLabelColor(int scale) {
+    if (scale < 0 || scale > mScaleLabelColor.length - 1) {
+      return TEXT_COLOR;
+    }
+    return mScaleLabelColor[scale];
+  }
+
+  /**
+   * Sets the bottom label color
+   * 
+   * @param color the bottom label color
+   */
+  public void setBottomLabelColor(int color) {
+    mBottomLabelColor = color;
+  }
+
+  /**
+   * Sets the scale label color
+   * 
+   * @param scale the renderer scale
+   * @param color the scale color
+   */
+  public void setScaleLabelColor(int scale, int color) {
+    mScaleLabelColor[scale] = color;
+  }
+
+  @Override
+  public void setLabelsColor(int color) {
+    super.setLabelsColor(color);
+    setBottomLabelColor(color);
+    setScaleLabelColor(0, color);
+    setScaleLabelColor(1, color);
   }
 
   /**

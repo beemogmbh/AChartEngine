@@ -219,14 +219,18 @@ public abstract class AbstractChart implements Serializable {
   }
   
   protected String getLabelWithUnit(NumberFormat format, double label, String unit) {
-	  String text = "";
-	  if (format !=null) {
-		  text = format.format(label) + " " + unit;
-	  } else if(label == Math.round(label)) {
-		  text = Math.round(label) + " " + unit;
+	  final String text;
+	  if (format != null) {
+		  text = format.format(label);
+	  } else if (label == Math.round(label)) {
+		  text = String.valueOf(Math.round(label));
 	  } else {
-		  text = label + " " + unit;
-	  }
+		  text = String.valueOf(label);
+    }
+  
+    if (unit != null && !unit.isEmpty()) {
+      return text.concat(" " + unit);
+    }
 	  
 	  return text;
   }

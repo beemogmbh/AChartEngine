@@ -375,8 +375,8 @@ public abstract class XYChart extends AbstractChart {
           minY);
 
       if (showLabels) {
-        paint.setColor(mRenderer.getLabelsColor());
         for (int i = 0; i < maxScaleNumber; i++) {
+          paint.setColor(mRenderer.getScaleLabelColor(i));
           Align axisAlign = mRenderer.getYAxisAlign(i);
           Double[] yTextLabelLocations = mRenderer.getYTextLabelLocations(i);
           for (Double location : yTextLabelLocations) {
@@ -425,7 +425,7 @@ public abstract class XYChart extends AbstractChart {
       }
 
       if (showLabels) {
-        paint.setColor(mRenderer.getLabelsColor());
+        paint.setColor(mRenderer.getBottomLabelColor());
         float size = mRenderer.getAxisTitleTextSize();
         paint.setTextSize(size);
         paint.setTextAlign(Align.CENTER);
